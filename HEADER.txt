@@ -1,8 +1,8 @@
-Copyright 2014 Joan Zapata
+This file is part of Android-pdfviewer-params.
 
-This file is part of Android-pdfview.
+android-pdfviewer-params project is branched out from http://joanzapata.com/android-pdfview/
 
-Android-pdfview is free software: you can redistribute it and/or modify
+Android-pdfviewer-params is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
