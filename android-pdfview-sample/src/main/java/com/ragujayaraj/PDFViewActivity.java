@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with Android-pdfview.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.joanzapata;
+package com.ragujayaraj;
 
 import android.content.Intent;
 import android.util.Log;
@@ -25,17 +25,26 @@ import com.actionbarsherlock.view.Menu;
 import com.googlecode.androidannotations.annotations.*;
 import com.joanzapata.pdfview.PDFView;
 import com.joanzapata.pdfview.listener.OnPageChangeListener;
-import com.joanzapata.pdfview.sample.R;
+import com.ragujayaraj.pdfviewer.R;
 
 import static java.lang.String.format;
+import android.os.Bundle;
+import android.widget.Toast;
+
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
 
 @EActivity(R.layout.activity_main)
 @OptionsMenu(R.menu.actionbar)
 public class PDFViewActivity extends SherlockActivity implements OnPageChangeListener {
 
-    public static final String SAMPLE_FILE = "sample.pdf";
+    public static final String SAMPLE_FILE = "";
 
     public static final String ABOUT_FILE = "about.pdf";
+
+    private String fileString = "";
 
     @ViewById
     PDFView pdfView;
@@ -46,22 +55,66 @@ public class PDFViewActivity extends SherlockActivity implements OnPageChangeLis
     @NonConfigurationInstance
     Integer pageNumber = 1;
 
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        fileString = getIntent().getDataString();
+        if(fileString == null){
+            Toast.makeText(PDFViewActivity.this, "File path not received", Toast.LENGTH_SHORT).show();
+            finish();
+        }else {
+            try {
+                fileString = new URL(fileString).getPath();
+            }catch (MalformedURLException e){
+                Toast.makeText(PDFViewActivity.this, "MalformedURLException" + fileString, Toast.LENGTH_SHORT).show();
+                e.printStackTrace();
+                finish();
+            }
+            Toast.makeText(PDFViewActivity.this, "Opening " + fileString, Toast.LENGTH_SHORT).show();
+        }
+    }
     @AfterViews
     void afterViews() {
-        display(pdfName, false);
+        displayFile(fileString, false);
     }
 
     @OptionsItem
     public void about() {
         if (!displaying(ABOUT_FILE))
-            display(ABOUT_FILE, true);
+            displayAsset(ABOUT_FILE, true);
     }
 
-    private void display(String assetFileName, boolean jumpToFirstPage) {
+    private void displayAsset(String assetFileName, boolean jumpToFirstPage) {
         if (jumpToFirstPage) pageNumber = 1;
         setTitle(pdfName = assetFileName);
 
         pdfView.fromAsset(assetFileName)
+                .defaultPage(pageNumber)
+                .onPageChange(this)
+                .load();
+    }
+
+    private void displayFile(String fileName, boolean jumpToFirstPage) {
+        if(fileName == null){
+            Toast.makeText(PDFViewActivity.this, "File path null", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
+        File file = new File(fileName);
+        if(file == null){
+            Toast.makeText(PDFViewActivity.this, "File not found", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
+        if(file.exists() == false){
+            Toast.makeText(PDFViewActivity.this, "File does not exist", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
+        if (jumpToFirstPage) pageNumber = 1;
+        setTitle(pdfName = fileName);
+
+        pdfView.fromFile(file)
                 .defaultPage(pageNumber)
                 .onPageChange(this)
                 .load();
@@ -76,7 +129,7 @@ public class PDFViewActivity extends SherlockActivity implements OnPageChangeLis
     @Override
     public void onBackPressed() {
         if (ABOUT_FILE.equals(pdfName)) {
-            display(SAMPLE_FILE, true);
+            displayFile(fileString, false);
         } else {
             super.onBackPressed();
         }

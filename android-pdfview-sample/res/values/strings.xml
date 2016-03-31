@@ -19,5 +19,5 @@
 
 -->
 <resources>
-    <string name="app_name">android-pdfview</string>
+    <string name="app_name">Simple PDF Viewer</string>
 </resources>
