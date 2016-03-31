@@ -16,6 +16,8 @@ public interface DecodeService
 
     void open(Uri fileUri);
 
+    void open(Uri fileUri, String pwd);
+
     void decodePage(Object decodeKey, int pageNum, DecodeCallback decodeCallback, float zoom, RectF pageSliceBounds);
 
     void stopDecoding(Object decodeKey);

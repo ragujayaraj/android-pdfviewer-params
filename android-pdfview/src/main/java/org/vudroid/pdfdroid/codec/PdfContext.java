@@ -18,6 +18,11 @@ public class PdfContext implements CodecContext
         return PdfDocument.openDocument(fileName, "");
     }
 
+    public CodecDocument openDocument(String fileName, String pwd)
+    {
+        return PdfDocument.openDocument(fileName, pwd);
+    }
+
     public void setContentResolver(ContentResolver contentResolver)
     {
         //TODO

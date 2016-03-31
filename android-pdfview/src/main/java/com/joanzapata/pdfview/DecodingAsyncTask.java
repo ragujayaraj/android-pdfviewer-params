@@ -38,6 +38,14 @@ class DecodingAsyncTask extends AsyncTask<Void, Void, Void> {
     private Uri uri;
 
     private PDFView pdfView;
+    String pwd = null;
+
+    public DecodingAsyncTask(Uri uri, PDFView pdfView, String pwd) {
+        this.cancelled = false;
+        this.pdfView = pdfView;
+        this.uri = uri;
+        this.pwd = pwd;
+    }
 
     public DecodingAsyncTask(Uri uri, PDFView pdfView) {
         this.cancelled = false;
@@ -49,7 +57,11 @@ class DecodingAsyncTask extends AsyncTask<Void, Void, Void> {
     protected Void doInBackground(Void... params) {
         decodeService = new DecodeServiceBase(new PdfContext());
         decodeService.setContentResolver(pdfView.getContext().getContentResolver());
-        decodeService.open(uri);
+        if(this.pwd == null){
+            decodeService.open(uri);
+        }else {
+            decodeService.open(uri, this.pwd);
+        }
         return null;
     }
 

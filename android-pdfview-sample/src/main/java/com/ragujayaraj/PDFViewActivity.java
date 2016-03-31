@@ -32,9 +32,19 @@ import android.os.Bundle;
 import android.widget.Toast;
 
 import java.io.File;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLDecoder;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.http.NameValuePair;
+import org.apache.http.client.utils.URLEncodedUtils;
 
 @EActivity(R.layout.activity_main)
 @OptionsMenu(R.menu.actionbar)
@@ -45,6 +55,7 @@ public class PDFViewActivity extends SherlockActivity implements OnPageChangeLis
     public static final String ABOUT_FILE = "about.pdf";
 
     private String fileString = "";
+    Map<String, String> fileParams;
 
     @ViewById
     PDFView pdfView;
@@ -64,9 +75,13 @@ public class PDFViewActivity extends SherlockActivity implements OnPageChangeLis
             finish();
         }else {
             try {
+                fileParams = readParamsIntoMap(java.net.URLDecoder.decode(fileString, "UTF-8"), "UTF-8");
+                if(fileString.contains("%3F")) {
+                    fileString = fileString.substring(0, fileString.indexOf("%3F"));
+                }
                 fileString = new URL(fileString).getPath();
-            }catch (MalformedURLException e){
-                Toast.makeText(PDFViewActivity.this, "MalformedURLException" + fileString, Toast.LENGTH_SHORT).show();
+            }catch (Exception e){
+                Toast.makeText(PDFViewActivity.this, "Problem with the path received" + fileString, Toast.LENGTH_SHORT).show();
                 e.printStackTrace();
                 finish();
             }
@@ -75,7 +90,12 @@ public class PDFViewActivity extends SherlockActivity implements OnPageChangeLis
     }
     @AfterViews
     void afterViews() {
+
+        if(fileParams.containsKey("page")){
+            pageNumber = Integer.parseInt(fileParams.get("page"));
+        }
         displayFile(fileString, false);
+
     }
 
     @OptionsItem
@@ -114,10 +134,14 @@ public class PDFViewActivity extends SherlockActivity implements OnPageChangeLis
         if (jumpToFirstPage) pageNumber = 1;
         setTitle(pdfName = fileName);
 
+        String password = "";
+        if(fileParams.containsKey("password")){
+            password = fileParams.get("password");
+        }
         pdfView.fromFile(file)
                 .defaultPage(pageNumber)
                 .onPageChange(this)
-                .load();
+                .load(password);
     }
 
     @Override
@@ -137,5 +161,19 @@ public class PDFViewActivity extends SherlockActivity implements OnPageChangeLis
 
     private boolean displaying(String fileName) {
         return fileName.equals(pdfName);
+    }
+
+
+
+    public static Map<String, String> readParamsIntoMap(String url, String charset) throws URISyntaxException {
+        Map<String, String> params = new HashMap();
+
+        List<NameValuePair> result = URLEncodedUtils.parse(new URI(url), charset);
+
+        for (NameValuePair nvp : result) {
+            params.put(nvp.getName(), nvp.getValue());
+        }
+
+        return params;
     }
 }

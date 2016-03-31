@@ -209,11 +209,11 @@ public class PDFView extends SurfaceView {
         setWillNotDraw(false);
     }
 
-    private void load(Uri uri, OnLoadCompleteListener listener) {
-        load(uri, listener, null);
+    private void load(Uri uri, OnLoadCompleteListener listener, String pwd) {
+        load(uri, listener, null, pwd);
     }
 
-    private void load(Uri uri, OnLoadCompleteListener onLoadCompleteListener, int[] userPages) {
+    private void load(Uri uri, OnLoadCompleteListener onLoadCompleteListener, int[] userPages, String pwd) {
 
         if (!recycled) {
             throw new IllegalStateException("Don't call load on a PDF View without recycling it first.");
@@ -229,7 +229,7 @@ public class PDFView extends SurfaceView {
         this.onLoadCompleteListener = onLoadCompleteListener;
 
         // Start decoding document
-        decodingAsyncTask = new DecodingAsyncTask(uri, this);
+        decodingAsyncTask = new DecodingAsyncTask(uri, this, pwd);
         decodingAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
         renderingAsyncTask = new RenderingAsyncTask(this);
@@ -1074,9 +1074,29 @@ public class PDFView extends SurfaceView {
             PDFView.this.maskPaint.setColor(maskColor);
             PDFView.this.maskPaint.setAlpha(maskAlpha);
             if (pageNumbers != null) {
-                PDFView.this.load(uri, onLoadCompleteListener, pageNumbers);
+                PDFView.this.load(uri, onLoadCompleteListener, pageNumbers, null);
             } else {
-                PDFView.this.load(uri, onLoadCompleteListener);
+                PDFView.this.load(uri, onLoadCompleteListener, null);
+            }
+        }
+
+        public void load(String pwd) {
+            PDFView.this.recycle();
+            PDFView.this.setOnDrawListener(onDrawListener);
+            PDFView.this.setOnPageChangeListener(onPageChangeListener);
+            PDFView.this.enableSwipe(enableSwipe);
+            PDFView.this.enableDoubletap(enableDoubletap);
+            PDFView.this.setDefaultPage(defaultPage);
+            PDFView.this.setUserWantsMinimap(showMinimap);
+            PDFView.this.setSwipeVertical(swipeVertical);
+            PDFView.this.dragPinchManager.setSwipeVertical(swipeVertical);
+            PDFView.this.maskPaint = new Paint();
+            PDFView.this.maskPaint.setColor(maskColor);
+            PDFView.this.maskPaint.setAlpha(maskAlpha);
+            if (pageNumbers != null) {
+                PDFView.this.load(uri, onLoadCompleteListener, pageNumbers, pwd);
+            } else {
+                PDFView.this.load(uri, onLoadCompleteListener, pwd);
             }
         }
 
